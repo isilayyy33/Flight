@@ -4,7 +4,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,25 +14,13 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Ticket {
+public class Country {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String pnrCode;
+    private String name;
 
-    @ManyToOne
-    private Passenger passenger;
-
-    @ManyToOne
-    private FlightSegment flightSegment;
-
-    private int totalPrice;
-
-    private int tax;
-
-    private int seatNumber;
-
-    private String purchaseDate;
+    private String isoCode; // örn: "TR", "US"
 }
