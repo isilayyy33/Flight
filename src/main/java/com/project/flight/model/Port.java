@@ -5,8 +5,16 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Port {
 
     @Id
@@ -19,45 +27,4 @@ public class Port {
 
     @ManyToOne //Nesne olarak tuttuk yani sadece isim değil
     private City city;
-
-    public Port() {
-    }
-
-    public Port(String code, String name, City city) {
-        this.code = code;
-        this.name = name;
-        this.city = city;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public String getCode() {
-        return code;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public City getCity() {
-        return city;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public void setCode(String code) {
-        this.code = code;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setCity(City city) {
-        this.city = city;
-    }
 }

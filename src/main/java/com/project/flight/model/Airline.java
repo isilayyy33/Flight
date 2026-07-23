@@ -4,12 +4,28 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@Entity  //Says it is a table in the database
+/*If I'd used @Data instead of @Entity 
+@Getter 
+@Setter 
+@NoArgsConstructor 
+@AllArgsConstructor , I'd only need one import (import lombok.Data;), 
+since it's a single annotation it just happens to bundle several behaviors internally, 
+but that doesn't change how many imports it needs on my end.     */
+
+@Entity //Says it is a table in the database
+@Getter //creates all getters
+@Setter //creates all setters
+@NoArgsConstructor //creates empty constructor
+@AllArgsConstructor //creates constructor with all parameters
 public class Airline {
 
     @Id //primary key
-    @GeneratedValue(strategy = GenerationType.IDENTITY) //automatic ID increase
+    @GeneratedValue(strategy = GenerationType.IDENTITY) //tells JPA/Hibernate how to automatically generate the primary key value when you save a new entity — so I never have to set id myself.
     private Long id;
 
     private String name;
@@ -17,47 +33,4 @@ public class Airline {
     private String iataCode;
 
     private int numericCode;
-
-    public Airline() {
-    }
-
-    //JPA (Java Persistence API), Java nesnelerini (object) veritabanındaki tablolara (table) dönüştürmeye yarayan bir teknolojidir.
-    // "Hibernate"
-    public Airline(String name, String iataCode, int numericCode) {
-        this.name = name;
-        this.iataCode = iataCode;
-        this.numericCode = numericCode;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getIataCode() {
-        return iataCode;
-    }
-
-    public int getNumericCode() {
-        return numericCode;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setIataCode(String iataCode) {
-        this.iataCode = iataCode;
-    }
-
-    public void setNumericCode(int numericCode) {
-        this.numericCode = numericCode;
-    }
 }

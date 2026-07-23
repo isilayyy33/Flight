@@ -4,8 +4,28 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
+/*If I wrote @Data instead of the 4 below it would generate @Getter @Setter but not @NoArgsConstructor and @AllArgsConstructor.
+And @Data would generate equals and hashcode methods which might be a problem down the road on entity classes and relationships.
+
+"@ToString will try to print every field, including @ManyToOne related entities. Printing a Port will try to print its City, 
+which if that also has a @ToString... you can get infinite loops, or at minimum accidentally trigger lazy-loading of related 
+data at the wrong time (extra DB queries, or LazyInitializationException if the session's closed).
+@EqualsAndHashCode by default uses all fields too, which is unstable for JPA entities — an entity's identity should really be 
+based on id alone, and computing hashCode from a mutable relationship graph can break things like storing entities in a HashSet."
+
+So I used the 4 below instead of @Data. */
+
+@Getter
+@Setter
+@NoArgsConstructor //creates empty constructor
+@AllArgsConstructor //creates constructor with all parameters
 public class FlightSegment {
 
     @Id
@@ -14,71 +34,16 @@ public class FlightSegment {
 
     private String flightNumber;
 
-    private String departurePort;
+    @ManyToOne
+    private Airline airline;
 
-    private String arrivalPort;
+    @ManyToOne
+    private Port departurePort;
+
+    @ManyToOne
+    private Port arrivalPort;
 
     private String departureTime;
 
     private String arrivalTime;
-
-    public FlightSegment() {
-    }
-
-    public FlightSegment(String flightNumber, String departurePort, String arrivalPort,
-                         String departureTime, String arrivalTime) {
-        this.flightNumber = flightNumber;
-        this.departurePort = departurePort;
-        this.arrivalPort = arrivalPort;
-        this.departureTime = departureTime;
-        this.arrivalTime = arrivalTime;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public String getFlightNumber() {
-        return flightNumber;
-    }
-
-    public String getDeparturePort() {
-        return departurePort;
-    }
-
-    public String getArrivalPort() {
-        return arrivalPort;
-    }
-
-    public String getDepartureTime() {
-        return departureTime;
-    }
-
-    public String getArrivalTime() {
-        return arrivalTime;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public void setFlightNumber(String flightNumber) {
-        this.flightNumber = flightNumber;
-    }
-
-    public void setDeparturePort(String departurePort) {
-        this.departurePort = departurePort;
-    }
-
-    public void setArrivalPort(String arrivalPort) {
-        this.arrivalPort = arrivalPort;
-    }
-
-    public void setDepartureTime(String departureTime) {
-        this.departureTime = departureTime;
-    }
-
-    public void setArrivalTime(String arrivalTime) {
-        this.arrivalTime = arrivalTime;
-    }
 }
