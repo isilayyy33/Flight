@@ -1,9 +1,12 @@
 package com.project.flight.model;
 
+import java.util.List;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -26,8 +29,8 @@ public class Ticket {
     @ManyToOne
     private Passenger passenger;
 
-    @ManyToOne
-    private FlightSegment flightSegment;
+    @ManyToMany
+    private List<FlightSegment> flightSegments;
 
     private int totalPrice;
 
