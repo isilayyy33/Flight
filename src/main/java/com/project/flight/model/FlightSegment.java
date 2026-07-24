@@ -1,16 +1,22 @@
 package com.project.flight.model;
 
+import java.time.LocalDateTime;
+
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+
 @Entity
+@Table(name = "flight_segments")
 /*If I wrote @Data instead of the 4 below it would generate @Getter @Setter but not @NoArgsConstructor and @AllArgsConstructor.
 And @Data would generate equals and hashcode methods which might be a problem down the road on entity classes and relationships.
 
@@ -32,6 +38,7 @@ public class FlightSegment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "flight_number")
     private String flightNumber;
 
     @ManyToOne
@@ -43,7 +50,12 @@ public class FlightSegment {
     @ManyToOne
     private Port arrivalPort;
 
-    private String departureTime;
+    @Column(name = "departure_time")
+    private LocalDateTime departureTime; 
 
-    private String arrivalTime;
+    @Column(name = "arrival_time")
+    private LocalDateTime arrivalTime;
+
+    /*should departureTime and arrivalTime include the date too 
+    and be LocalDateTime, or is this meant to be just time so LocalTime, no date attached? */
 }

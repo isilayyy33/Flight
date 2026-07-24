@@ -1,9 +1,11 @@
 package com.project.flight.model;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,6 +20,7 @@ since it's a single annotation it just happens to bundle several behaviors inter
 but that doesn't change how many imports it needs on my end.     */
 
 @Entity //Says it is a table in the database
+@Table(name = "airlines")
 @Getter //creates all getters
 @Setter //creates all setters
 @NoArgsConstructor //creates empty constructor
@@ -28,9 +31,13 @@ public class Airline {
     @GeneratedValue(strategy = GenerationType.IDENTITY) //tells JPA/Hibernate how to automatically generate the primary key value when you save a new entity — so I never have to set id myself.
     private Long id;
 
+
+    @Column(name = "name")
     private String name;
 
+    @Column(name = "iata_code", length = 3)
     private String iataCode;
 
+    @Column(name = "numeric_code")
     private int numericCode;
 }

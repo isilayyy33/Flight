@@ -1,5 +1,7 @@
 package com.project.flight.model;
 
+import java.math.BigDecimal;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -12,20 +14,21 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "countries")
+@Table(name = "billing_payments")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Country {
+public class BillingPayment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "name")
-    private String name;
+    @Column(name = "total_price")
+    private BigDecimal totalPrice;
 
-    @Column(name = "iso_code", length = 3)
-    private String isoCode; // örn: "TR", "US"
+    @Column(name = "tax")
+    private BigDecimal tax;
+     /*Money should never be stored as int or double in real systems int can't hold decimals (no cents), and double has rounding errors. BigDecimal is the standard for currency. */
 }
