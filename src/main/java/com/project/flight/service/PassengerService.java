@@ -2,13 +2,9 @@ package com.project.flight.service; //Declares that this class lives in the serv
 
 import java.time.LocalDate;
 import java.time.Period;
-/*LocalDate represents a date (used for birth date), and Period is a tool for calculating the difference between two dates.*/
-
 import java.util.List;
-/*Needed because getAllPassengers() returns multiple Passenger objects — we'll use List<Passenger>. */
 
 import org.springframework.stereotype.Service;
-/*Needed for the @Service annotation.  */
 
 import com.project.flight.model.Passenger;
 import com.project.flight.model.PassengerTypeEnum;
