@@ -1,5 +1,8 @@
 package com.project.flight.repository;
 
-public class PortRepository {
-    
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.project.flight.model.Port;
+
+public interface PortRepository extends JpaRepository<Port, Long> {
 }

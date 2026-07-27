@@ -1,5 +1,8 @@
 package com.project.flight.repository;
 
-public class FlightSegmentRepository {
-    
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.project.flight.model.FlightSegment;
+
+public interface FlightSegmentRepository extends JpaRepository<FlightSegment, Long> {
 }

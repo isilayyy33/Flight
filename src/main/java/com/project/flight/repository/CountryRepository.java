@@ -1,5 +1,8 @@
 package com.project.flight.repository;
 
-public class CountryRepository {
-    
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.project.flight.model.Country;
+
+public interface CountryRepository extends JpaRepository<Country, String> {
 }

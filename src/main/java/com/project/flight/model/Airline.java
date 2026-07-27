@@ -2,8 +2,6 @@ package com.project.flight.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -27,17 +25,14 @@ but that doesn't change how many imports it needs on my end.     */
 @AllArgsConstructor //creates constructor with all parameters
 public class Airline {
 
-    @Id //primary key
-    @GeneratedValue(strategy = GenerationType.IDENTITY) //tells JPA/Hibernate how to automatically generate the primary key value when you save a new entity — so I never have to set id myself.
-    private Long id;
-
+    @Id
+    @Column(name = "aa_code", length = 3)
+    private String aaCode; // primary key, eskiden iataCode
 
     @Column(name = "name")
     private String name;
 
-    @Column(name = "iata_code", length = 3)
-    private String iataCode;
-
     @Column(name = "numeric_code")
     private int numericCode;
+
 }

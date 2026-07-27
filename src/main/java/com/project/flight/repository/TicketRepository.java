@@ -1,5 +1,8 @@
 package com.project.flight.repository;
 
-public class TicketRepository {
-    
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.project.flight.model.Ticket;
+
+public interface TicketRepository extends JpaRepository<Ticket, Long> {
 }
