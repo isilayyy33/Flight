@@ -26,13 +26,13 @@ but that doesn't change how many imports it needs on my end.     */
 public class Airline {
 
     @Id
-    @Column(name = "aa_code", length = 3)
+    @Column(name = "aa_code", length = 2)
     private String aaCode; // primary key, eskiden iataCode
 
     @Column(name = "name")
     private String name;
 
     @Column(name = "numeric_code")
-    private int numericCode;
+    private String numericCode;
 
 }

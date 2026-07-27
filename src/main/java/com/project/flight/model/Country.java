@@ -18,7 +18,7 @@ import lombok.Setter;
 public class Country {
 
     @Id
-    @Column(name = "iso_code", length = 3)
+    @Column(name = "iso_code", length = 2)
     private String isoCode; // örn: "TR", "US" — artık primary key
 
     @Column(name = "name")

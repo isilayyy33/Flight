@@ -30,5 +30,12 @@ public class BillingPayment {
 
     @Column(name = "tax")
     private BigDecimal tax;
+
+    @Column(name = "fare")
+    private BigDecimal fare;
+
+    @Column(name = "service_fee")
+    private BigDecimal serviceFee;
+
      /*Money should never be stored as int or double in real systems int can't hold decimals (no cents), and double has rounding errors. BigDecimal is the standard for currency. */
 }
