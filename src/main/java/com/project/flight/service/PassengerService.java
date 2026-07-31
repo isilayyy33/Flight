@@ -23,14 +23,23 @@ public class PassengerService {
     /*This is constructor injection, when Spring creates PassengerService, it automatically finds an existing PassengerRepository instance and hands it in here. We mark the field final to guarantee it never changes after construction.*/
 
     public PassengerTypeEnum determinePassengerType(LocalDate birthDate) {
-        int age = Period.between(birthDate, LocalDate.now()).getYears();
+
+     if (birthDate == null) {
+       throw new IllegalArgumentException("Error:Birth date is required to determine passenger type.");
+}
+
+int age = Period.between(birthDate, LocalDate.now()).getYears();
+     
 /*Period.between(birthDate, today) calculates the difference between two dates (in years, months, days). .getYears() grabs just the whole-year part — i.e., "how old is this person." */
 /*every time this code runs, LocalDate.now() gives you whatever today's actual calendar date is */
+
 
         for (PassengerTypeEnum type : PassengerTypeEnum.values()) {
             if (age >= type.getMinAge() && age <= type.getMaxAge()) {
                 return type;
             }
+
+       
         }
         return PassengerTypeEnum.ADT;
     }
