@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.project.flight.exception.NoDataFoundException;
 import com.project.flight.model.Airline;
 import com.project.flight.repository.AirlineRepository;
 
@@ -17,6 +18,11 @@ public class AirlineService {
     }
 
     public Airline saveAirline(Airline airline) {
+        // Check if an Airline with this code already exists before creating,
+        // otherwise save() would silently overwrite the existing record instead of creating a new one.
+        if (airlineRepository.existsById(airline.getAaCode())) {
+            throw new IllegalArgumentException("Airline already exists with code: " + airline.getAaCode());
+        }
         return airlineRepository.save(airline);
     }
 
@@ -26,7 +32,7 @@ public class AirlineService {
 
     public Airline getAirlineById(String aaCode) {
         return airlineRepository.findById(aaCode)
-                .orElseThrow(() -> new RuntimeException("Airline not found with code: " + aaCode));
+                .orElseThrow(() -> new NoDataFoundException("Airline not found with code: " + aaCode));
     }
 
     public Airline updateAirline(String aaCode, Airline updatedAirline) {
