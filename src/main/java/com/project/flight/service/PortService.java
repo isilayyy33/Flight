@@ -7,20 +7,20 @@ import org.springframework.stereotype.Service;
 import com.project.flight.exception.NoDataFoundException;
 import com.project.flight.model.City;
 import com.project.flight.model.Port;
-import com.project.flight.repository.CityRepository;
 import com.project.flight.repository.PortRepository;
 
 @Service
 public class PortService {
 
     private final PortRepository portRepository;
-    private final CityRepository cityRepository;
-    // CityRepository added so we can verify that a referenced city actually exists
-    // before allowing a port to be created or updated
+    private final CityService cityService;
+    // Depending on CityService (not CityRepository directly) keeps this class
+    // from reaching into another entity's data layer — any future validation rules
+    // added in CityService automatically apply here too.
 
-    public PortService(PortRepository portRepository, CityRepository cityRepository) {
+    public PortService(PortRepository portRepository, CityService cityService) {
         this.portRepository = portRepository;
-        this.cityRepository = cityRepository;
+        this.cityService = cityService;
     }
 
     public Port savePort(Port port) {
@@ -45,7 +45,7 @@ public class PortService {
 
     public Port updatePort(String code, Port updatedPort) {
         Port existing = getPortByCode(code);
-        //we don't allow attaching a city that doesn't exist in the system
+        // we don't allow attaching a city that doesn't exist in the system
         validateCityExists(updatedPort.getCity());
         existing.setName(updatedPort.getName());
         existing.setCity(updatedPort.getCity());
@@ -56,14 +56,20 @@ public class PortService {
         portRepository.deleteById(code);
     }
 
-    // Helper method: checks that the given city really exists in the system
-    // Used by both savePort and updatePort
+    // Helper method: checks that the given city really exists in the system.
+    // Delegates to CityService instead of querying CityRepository directly.
+    // Used by both savePort and updatePort.
     private void validateCityExists(City city) {
         if (city == null || city.getCityCode() == null) {
             throw new IllegalArgumentException("City information is required.");
         }
-        if (!cityRepository.existsById(city.getCityCode())) {
-            throw new IllegalArgumentException("No such city exists with code: " + city.getCityCode());
-        }
+        cityService.getCityEntityByCode(city.getCityCode()); // throws NoDataFoundException if missing
+    }
+
+    // Used internally by other services (like FlightSegmentService) that need
+    // to attach a real Port entity.
+    public Port getPortEntityByCode(String code) {
+        return portRepository.findById(code)
+                .orElseThrow(() -> new NoDataFoundException("Port not found with code: " + code));
     }
 }

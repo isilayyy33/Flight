@@ -29,11 +29,11 @@ public class AirlineService {
     public List<Airline> getAllAirlines() {
         return airlineRepository.findAll();
     }
-
+/* 
     public Airline getAirlineById(String aaCode) {
         return airlineRepository.findById(aaCode)
                 .orElseThrow(() -> new NoDataFoundException("Airline not found with code: " + aaCode));
-    }
+    }*/
 
     public Airline updateAirline(String aaCode, Airline updatedAirline) {
         Airline existing = getAirlineById(aaCode);
@@ -45,4 +45,18 @@ public class AirlineService {
     public void deleteAirline(String aaCode) {
         airlineRepository.deleteById(aaCode);
     }
+/* 
+    public Airline getAirlineEntityByCode(String aaCode) {
+    return airlineRepository.findById(aaCode)
+            .orElseThrow(() -> new NoDataFoundException("Airline not found with code: " + aaCode));
+} */
+ 
+    public Airline getAirlineById(String aaCode) {
+    return getAirlineEntityByCode(aaCode);
+}
+
+public Airline getAirlineEntityByCode(String aaCode) {
+    return airlineRepository.findById(aaCode)
+            .orElseThrow(() -> new NoDataFoundException("Airline not found with code: " + aaCode));
+}        /*Instead of writing the same database query twice under two different names, getAirlineById now just calls getAirlineEntityByCode and returns whatever it gives back so we don't have repeatitions. */
 }

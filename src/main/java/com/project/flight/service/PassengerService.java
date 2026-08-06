@@ -6,10 +6,10 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.project.flight.exception.NoDataFoundException;
 import com.project.flight.model.Passenger;
 import com.project.flight.model.PassengerTypeEnum;
 import com.project.flight.repository.PassengerRepository;
-/*The other classes this service depends on are at theabove: the entity, the enum, and the repository. */
 
 @Service
 public class PassengerService {
@@ -93,4 +93,9 @@ Why update existing instead of just saving updatedPassenger directly? Because up
     }
 
 /*deleteById() is another ready-made method — it removes the row with that id from the database. Return type is void because there's nothing meaningful to return after a delete. */
+
+    public Passenger getPassengerEntityById(Long id) {
+    return passengerRepository.findById(id)
+            .orElseThrow(() -> new NoDataFoundException("Passenger not found with id: " + id));
+    }
 }

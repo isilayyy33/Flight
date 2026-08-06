@@ -6,32 +6,32 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 import com.project.flight.dto.TicketDTO;
+import com.project.flight.exception.NoDataFoundException;
 import com.project.flight.mapper.TicketMapper;
 import com.project.flight.model.BillingPayment;
 import com.project.flight.model.FlightSegment;
 import com.project.flight.model.Passenger;
 import com.project.flight.model.Ticket;
-import com.project.flight.repository.BillingPaymentRepository;
-import com.project.flight.repository.FlightSegmentRepository;
-import com.project.flight.repository.PassengerRepository;
 import com.project.flight.repository.TicketRepository;
 
 @Service
 public class TicketService {
 
     private final TicketRepository ticketRepository;
-    private final PassengerRepository passengerRepository;
-    private final FlightSegmentRepository flightSegmentRepository;
-    private final BillingPaymentRepository billingPaymentRepository;
+    private final PassengerService passengerService;
+    private final FlightSegmentService flightSegmentService;
+    private final BillingPaymentService billingPaymentService;
+    // Depending on the owning Services (not their repositories directly) keeps
+    // this class from reaching into another entity's data layer.
 
     public TicketService(TicketRepository ticketRepository,
-                          PassengerRepository passengerRepository,
-                          FlightSegmentRepository flightSegmentRepository,
-                          BillingPaymentRepository billingPaymentRepository) {
+                          PassengerService passengerService,
+                          FlightSegmentService flightSegmentService,
+                          BillingPaymentService billingPaymentService) {
         this.ticketRepository = ticketRepository;
-        this.passengerRepository = passengerRepository;
-        this.flightSegmentRepository = flightSegmentRepository;
-        this.billingPaymentRepository = billingPaymentRepository;
+        this.passengerService = passengerService;
+        this.flightSegmentService = flightSegmentService;
+        this.billingPaymentService = billingPaymentService;
     }
 
     // CREATE
@@ -41,7 +41,7 @@ public class TicketService {
         return TicketMapper.toDTO(saved);
     }
 
-    // READ - hepsini getir
+    // READ - get all
     public List<TicketDTO> getAllTickets() {
         return ticketRepository.findAll()
                 .stream()
@@ -49,17 +49,17 @@ public class TicketService {
                 .collect(Collectors.toList());
     }
 
-    // READ - id'ye göre tek kayıt
+    // READ - get one by id
     public TicketDTO getTicketById(Long id) {
         Ticket ticket = ticketRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Ticket not found with id: " + id));
+                .orElseThrow(() -> new NoDataFoundException("Ticket not found with id: " + id));
         return TicketMapper.toDTO(ticket);
     }
 
     // UPDATE
     public TicketDTO updateTicket(Long id, TicketDTO dto) {
         Ticket existing = ticketRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Ticket not found with id: " + id));
+                .orElseThrow(() -> new NoDataFoundException("Ticket not found with id: " + id));
 
         existing.setPnrCode(dto.getPnrCode());
         existing.setPassenger(findPassenger(dto.getPassengerId()));
@@ -77,7 +77,6 @@ public class TicketService {
         ticketRepository.deleteById(id);
     }
 
-    // Yardımcı metod: DTO'dan gelen id'lerle gerçek Entity nesnesi kuruyor
     private Ticket buildEntityFromDTO(TicketDTO dto) {
         Ticket ticket = new Ticket();
         ticket.setPnrCode(dto.getPnrCode());
@@ -89,20 +88,20 @@ public class TicketService {
         return ticket;
     }
 
+    // Now delegates to PassengerService instead of querying PassengerRepository directly.
     private Passenger findPassenger(Long passengerId) {
-        return passengerRepository.findById(passengerId)
-                .orElseThrow(() -> new RuntimeException("Passenger not found with id: " + passengerId));
+        return passengerService.getPassengerEntityById(passengerId);
     }
 
+    // Now delegates to BillingPaymentService instead of querying BillingPaymentRepository directly.
     private BillingPayment findBillingPayment(Long billingPaymentId) {
-        return billingPaymentRepository.findById(billingPaymentId)
-                .orElseThrow(() -> new RuntimeException("BillingPayment not found with id: " + billingPaymentId));
+        return billingPaymentService.getBillingPaymentEntityById(billingPaymentId);
     }
 
+    // Now delegates to FlightSegmentService instead of querying FlightSegmentRepository directly.
     private List<FlightSegment> findFlightSegments(List<Long> flightSegmentIds) {
         return flightSegmentIds.stream()
-                .map(id -> flightSegmentRepository.findById(id)
-                        .orElseThrow(() -> new RuntimeException("FlightSegment not found with id: " + id)))
+                .map(flightSegmentService::getFlightSegmentEntityById)
                 .collect(Collectors.toList());
     }
 }

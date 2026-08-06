@@ -44,4 +44,10 @@ public class CountryService {
     public void deleteCountry(String isoCode) {
         countryRepository.deleteById(isoCode);
     }
+
+    // Used internally by other services (like CityService) that need to attach a real Country entity.
+    public Country getCountryEntityByIsoCode(String isoCode) {
+        return countryRepository.findById(isoCode)
+                .orElseThrow(() -> new NoDataFoundException("Country not found with isoCode: " + isoCode));
+}
 }

@@ -66,4 +66,9 @@ public class BillingPaymentService {
     public void deleteBillingPayment(Long id) {
         billingPaymentRepository.deleteById(id);
     }
+
+    public BillingPayment getBillingPaymentEntityById(Long id) {
+    return billingPaymentRepository.findById(id)
+            .orElseThrow(() -> new NoDataFoundException("BillingPayment not found with id: " + id));
+    }
 }

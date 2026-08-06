@@ -3,31 +3,31 @@ package com.project.flight.service;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.springframework.stereotype.Service;   /*This annotation tells Spring to treat this class as a service component, as a bean, making it eligible for dependency injection and other Spring features.*/
+import org.springframework.stereotype.Service;
 
 import com.project.flight.dto.FlightSegmentDTO;
-import com.project.flight.exception.NoDataFoundException; 
+import com.project.flight.exception.NoDataFoundException;
 import com.project.flight.mapper.FlightSegmentMapper;
 import com.project.flight.model.Airline;
 import com.project.flight.model.FlightSegment;
 import com.project.flight.model.Port;
-import com.project.flight.repository.AirlineRepository;
 import com.project.flight.repository.FlightSegmentRepository;
-import com.project.flight.repository.PortRepository;
 
 @Service
 public class FlightSegmentService {
 
-    private final FlightSegmentRepository flightSegmentRepository; /*we writw "final" because we don't want it to be changed after initialization */
-    private final AirlineRepository airlineRepository;
-    private final PortRepository portRepository;
+    private final FlightSegmentRepository flightSegmentRepository;
+    private final AirlineService airlineService;
+    private final PortService portService;
+    // Depending on AirlineService/PortService (not their repositories directly) keeps
+    // this class from reaching into another entity's data layer.
 
     public FlightSegmentService(FlightSegmentRepository flightSegmentRepository,
-                                 AirlineRepository airlineRepository,
-                                 PortRepository portRepository) {
+                                 AirlineService airlineService,
+                                 PortService portService) {
         this.flightSegmentRepository = flightSegmentRepository;
-        this.airlineRepository = airlineRepository;
-        this.portRepository = portRepository;
+        this.airlineService = airlineService;
+        this.portService = portService;
     }
 
     // CREATE
@@ -37,7 +37,7 @@ public class FlightSegmentService {
         return FlightSegmentMapper.toDTO(saved);
     }
 
-    // READ 
+    // READ - get all
     public List<FlightSegmentDTO> getAllFlightSegments() {
         return flightSegmentRepository.findAll()
                 .stream()
@@ -45,7 +45,7 @@ public class FlightSegmentService {
                 .collect(Collectors.toList());
     }
 
-    // READ 
+    // READ - get one by id
     public FlightSegmentDTO getFlightSegmentById(Long id) {
         FlightSegment flightSegment = flightSegmentRepository.findById(id)
                 .orElseThrow(() -> new NoDataFoundException("FlightSegment not found with id: " + id));
@@ -73,7 +73,6 @@ public class FlightSegmentService {
         flightSegmentRepository.deleteById(id);
     }
 
-    
     private FlightSegment buildEntityFromDTO(FlightSegmentDTO dto) {
         FlightSegment flightSegment = new FlightSegment();
         flightSegment.setFlightNumber(dto.getFlightNumber());
@@ -85,13 +84,20 @@ public class FlightSegmentService {
         return flightSegment;
     }
 
+    // Now delegates to AirlineService instead of querying AirlineRepository directly.
     private Airline findAirline(String aaCode) {
-        return airlineRepository.findById(aaCode)
-                .orElseThrow(() -> new NoDataFoundException("Airline not found with code: " + aaCode));
+        return airlineService.getAirlineEntityByCode(aaCode);
     }
 
+    // Now delegates to PortService instead of querying PortRepository directly.
     private Port findPort(String code) {
-        return portRepository.findById(code)
-                .orElseThrow(() -> new NoDataFoundException("Port not found with code: " + code));
+        return portService.getPortEntityByCode(code);
+    }
+
+    // Used internally by other services (like TicketService) that need
+    // to attach a real FlightSegment entity.
+    public FlightSegment getFlightSegmentEntityById(Long id) {
+        return flightSegmentRepository.findById(id)
+                .orElseThrow(() -> new NoDataFoundException("FlightSegment not found with id: " + id));
     }
 }

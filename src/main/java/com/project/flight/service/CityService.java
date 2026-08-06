@@ -8,19 +8,19 @@ import com.project.flight.exception.NoDataFoundException;
 import com.project.flight.model.City;
 import com.project.flight.model.Country;
 import com.project.flight.repository.CityRepository;
-import com.project.flight.repository.CountryRepository;
 
 @Service
 public class CityService {
 
     private final CityRepository cityRepository;
-    private final CountryRepository countryRepository;
-    // CountryRepository added so we can verify that a referenced country actually exists
-    // before allowing a city to be created 
+    private final CountryService countryService;
+    // Depending on CountryService (not CountryRepository directly) keeps this class
+    // from reaching into another entity's data layer — any future validation rules
+    // added in CountryService automatically apply here too.
 
-    public CityService(CityRepository cityRepository, CountryRepository countryRepository) {
+    public CityService(CityRepository cityRepository, CountryService countryService) {
         this.cityRepository = cityRepository;
-        this.countryRepository = countryRepository;
+        this.countryService = countryService;
     }
 
     public City saveCity(City city) {
@@ -38,13 +38,12 @@ public class CityService {
     }
 
     public City getCityByCode(String cityCode) {
-        return cityRepository.findById(cityCode)
-                .orElseThrow(() -> new NoDataFoundException("City not found with code: " + cityCode));
+        return getCityEntityByCode(cityCode);
     }
 
     public City updateCity(String cityCode, City updatedCity) {
         City existing = getCityByCode(cityCode);
-        //  we don't allow attaching a Country that doesn't exist in the system.
+        // we don't allow attaching a Country that doesn't exist in the system.
         validateCountryExists(updatedCity.getCountry());
         existing.setName(updatedCity.getName());
         existing.setCountry(updatedCity.getCountry());
@@ -55,14 +54,20 @@ public class CityService {
         cityRepository.deleteById(cityCode);
     }
 
-    // Helper method: checks that the given country really exists in the system
-    // Used by both saveCity and updateCity 
+    // Helper method: checks that the given country really exists in the system.
+    // Delegates to CountryService instead of querying CountryRepository directly.
+    // Used by both saveCity and updateCity.
     private void validateCountryExists(Country country) {
         if (country == null || country.getIsoCode() == null) {
             throw new IllegalArgumentException("Country information is required.");
         }
-        if (!countryRepository.existsById(country.getIsoCode())) {
-            throw new IllegalArgumentException("No such country exists with isoCode: " + country.getIsoCode());
-        }
+        countryService.getCountryEntityByIsoCode(country.getIsoCode()); // throws NoDataFoundException if missing
+    }
+
+    // Single source of truth for "find City by code or throw" —
+    // used by getCityByCode, updateCity, and other services (like PortService).
+    public City getCityEntityByCode(String cityCode) {
+        return cityRepository.findById(cityCode)
+                .orElseThrow(() -> new NoDataFoundException("City not found with code: " + cityCode));
     }
 }
