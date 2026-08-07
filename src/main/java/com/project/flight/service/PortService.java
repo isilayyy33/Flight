@@ -38,9 +38,10 @@ public class PortService {
         return portRepository.findAll();
     }
 
+    // Delegates to getPortEntityByCode instead of repeating the same query here —
+    // keeps the "Port not found" lookup logic in exactly one place.
     public Port getPortByCode(String code) {
-        return portRepository.findById(code)
-                .orElseThrow(() -> new NoDataFoundException("Port not found with code: " + code));
+        return getPortEntityByCode(code);
     }
 
     public Port updatePort(String code, Port updatedPort) {

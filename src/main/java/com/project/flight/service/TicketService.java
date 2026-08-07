@@ -50,16 +50,15 @@ public class TicketService {
     }
 
     // READ - get one by id
+    // Delegates to getTicketEntityById instead of repeating the same query here —
+    // keeps the "Ticket not found" lookup logic in exactly one place.
     public TicketDTO getTicketById(Long id) {
-        Ticket ticket = ticketRepository.findById(id)
-                .orElseThrow(() -> new NoDataFoundException("Ticket not found with id: " + id));
-        return TicketMapper.toDTO(ticket);
+        return TicketMapper.toDTO(getTicketEntityById(id));
     }
 
     // UPDATE
     public TicketDTO updateTicket(Long id, TicketDTO dto) {
-        Ticket existing = ticketRepository.findById(id)
-                .orElseThrow(() -> new NoDataFoundException("Ticket not found with id: " + id));
+        Ticket existing = getTicketEntityById(id);
 
         existing.setPnrCode(dto.getPnrCode());
         existing.setPassenger(findPassenger(dto.getPassengerId()));
@@ -103,5 +102,12 @@ public class TicketService {
         return flightSegmentIds.stream()
                 .map(flightSegmentService::getFlightSegmentEntityById)
                 .collect(Collectors.toList());
+    }
+
+    // Single source of truth for "find Ticket by id or throw" 
+    // used by getTicketById and updateTicket.
+    private Ticket getTicketEntityById(Long id) {
+        return ticketRepository.findById(id)
+                .orElseThrow(() -> new NoDataFoundException("Ticket not found with id: " + id));
     }
 }

@@ -31,8 +31,7 @@ public class CountryService {
     }
 
     public Country getCountryByIsoCode(String isoCode) {
-        return countryRepository.findById(isoCode)
-                .orElseThrow(() -> new NoDataFoundException("Country not found with isoCode: " + isoCode));
+        return getCountryEntityByIsoCode(isoCode);
     }
 
     public Country updateCountry(String isoCode, Country updatedCountry) {
@@ -45,9 +44,10 @@ public class CountryService {
         countryRepository.deleteById(isoCode);
     }
 
-    // Used internally by other services (like CityService) that need to attach a real Country entity.
+    // Single source of truth for "find Country by isoCode or throw" —
+    // used by getCountryByIsoCode, updateCountry, and other services (like CityService).
     public Country getCountryEntityByIsoCode(String isoCode) {
         return countryRepository.findById(isoCode)
                 .orElseThrow(() -> new NoDataFoundException("Country not found with isoCode: " + isoCode));
-}
+    }
 }

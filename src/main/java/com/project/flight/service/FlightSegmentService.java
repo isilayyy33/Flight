@@ -47,15 +47,12 @@ public class FlightSegmentService {
 
     // READ - get one by id
     public FlightSegmentDTO getFlightSegmentById(Long id) {
-        FlightSegment flightSegment = flightSegmentRepository.findById(id)
-                .orElseThrow(() -> new NoDataFoundException("FlightSegment not found with id: " + id));
-        return FlightSegmentMapper.toDTO(flightSegment);
+        return FlightSegmentMapper.toDTO(getFlightSegmentEntityById(id));
     }
 
     // UPDATE
     public FlightSegmentDTO updateFlightSegment(Long id, FlightSegmentDTO dto) {
-        FlightSegment existing = flightSegmentRepository.findById(id)
-                .orElseThrow(() -> new NoDataFoundException("FlightSegment not found with id: " + id));
+        FlightSegment existing = getFlightSegmentEntityById(id);
 
         existing.setFlightNumber(dto.getFlightNumber());
         existing.setAirline(findAirline(dto.getAirlineCode()));
@@ -94,10 +91,13 @@ public class FlightSegmentService {
         return portService.getPortEntityByCode(code);
     }
 
+   
     // Used internally by other services (like TicketService) that need
     // to attach a real FlightSegment entity.
     public FlightSegment getFlightSegmentEntityById(Long id) {
         return flightSegmentRepository.findById(id)
                 .orElseThrow(() -> new NoDataFoundException("FlightSegment not found with id: " + id));
     }
+     // Single source of truth for "find FlightSegment by id or throw" 
+    
 }

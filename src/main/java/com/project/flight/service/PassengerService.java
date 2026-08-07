@@ -63,7 +63,7 @@ int age = Period.between(birthDate, LocalDate.now()).getYears();
     // READ - id'ye göre tek bir kayıt getir
     public Passenger getPassengerById(Long id) {
         return passengerRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Passenger not found with id: " + id));
+                .orElseThrow(() -> new NoDataFoundException("Passenger not found with id: " + id));
     }
 /*findById(id) returns an Optional<Passenger> — because a record at that id might not exist. Optional is a wrapper type meaning "there's either a value here, or there isn't"; it's a safer approach than just returning null.
 
@@ -94,6 +94,8 @@ Why update existing instead of just saving updatedPassenger directly? Because up
 
 /*deleteById() is another ready-made method — it removes the row with that id from the database. Return type is void because there's nothing meaningful to return after a delete. */
 
+    // Single source of truth for "find Passenger by id or throw" —
+    // used by getPassengerById, and other services (like TicketService) that need to attach a real Passenger entity.
     public Passenger getPassengerEntityById(Long id) {
     return passengerRepository.findById(id)
             .orElseThrow(() -> new NoDataFoundException("Passenger not found with id: " + id));
