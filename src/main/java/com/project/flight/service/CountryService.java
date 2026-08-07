@@ -1,10 +1,13 @@
 package com.project.flight.service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
+import com.project.flight.dto.CountryDTO;
 import com.project.flight.exception.NoDataFoundException;
+import com.project.flight.mapper.CountryMapper;
 import com.project.flight.model.Country;
 import com.project.flight.repository.CountryRepository;
 
@@ -17,35 +20,46 @@ public class CountryService {
         this.countryRepository = countryRepository;
     }
 
-    public Country saveCountry(Country country) {
-        // Check if a Country with this isoCode already exists before creating,
-        // otherwise save() would silently overwrite the existing record instead of creating a new one.
-        if (countryRepository.existsById(country.getIsoCode())) {
-            throw new IllegalArgumentException("Country already exists with isoCode: " + country.getIsoCode());
+    // CREATE
+    public CountryDTO saveCountry(CountryDTO dto) {
+        if (countryRepository.existsById(dto.getIsoCode())) {
+            throw new IllegalArgumentException("Country already exists with isoCode: " + dto.getIsoCode());
         }
-        return countryRepository.save(country);
+        Country country = new Country();
+        country.setIsoCode(dto.getIsoCode());
+        country.setName(dto.getName());
+        Country saved = countryRepository.save(country);
+        return CountryMapper.toDTO(saved);
     }
 
-    public List<Country> getAllCountries() {
-        return countryRepository.findAll();
+    // READ - get all
+    public List<CountryDTO> getAllCountries() {
+        return countryRepository.findAll()
+                .stream()
+                .map(CountryMapper::toDTO)
+                .collect(Collectors.toList());
     }
 
-    public Country getCountryByIsoCode(String isoCode) {
-        return getCountryEntityByIsoCode(isoCode);
+    // READ - get one by isoCode
+    public CountryDTO getCountryByIsoCode(String isoCode) {
+        return CountryMapper.toDTO(getCountryEntityByIsoCode(isoCode));
     }
 
-    public Country updateCountry(String isoCode, Country updatedCountry) {
-        Country existing = getCountryByIsoCode(isoCode);
-        existing.setName(updatedCountry.getName());
-        return countryRepository.save(existing);
+    // UPDATE
+    public CountryDTO updateCountry(String isoCode, CountryDTO dto) {
+        Country existing = getCountryEntityByIsoCode(isoCode);
+        existing.setName(dto.getName());
+        Country updated = countryRepository.save(existing);
+        return CountryMapper.toDTO(updated);
     }
 
+    // DELETE
     public void deleteCountry(String isoCode) {
         countryRepository.deleteById(isoCode);
     }
 
     // Single source of truth for "find Country by isoCode or throw" —
-    // used by getCountryByIsoCode, updateCountry, and other services (like CityService).
+    // used internally here, and by other services (like CityService) that need a real Country entity.
     public Country getCountryEntityByIsoCode(String isoCode) {
         return countryRepository.findById(isoCode)
                 .orElseThrow(() -> new NoDataFoundException("Country not found with isoCode: " + isoCode));

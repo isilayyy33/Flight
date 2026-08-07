@@ -1,10 +1,13 @@
 package com.project.flight.service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
+import com.project.flight.dto.CityDTO;
 import com.project.flight.exception.NoDataFoundException;
+import com.project.flight.mapper.CityMapper;
 import com.project.flight.model.City;
 import com.project.flight.model.Country;
 import com.project.flight.repository.CityRepository;
@@ -14,58 +17,64 @@ public class CityService {
 
     private final CityRepository cityRepository;
     private final CountryService countryService;
-    // Depending on CountryService (not CountryRepository directly) keeps this class
-    // from reaching into another entity's data layer — any future validation rules
-    // added in CountryService automatically apply here too.
 
     public CityService(CityRepository cityRepository, CountryService countryService) {
         this.cityRepository = cityRepository;
         this.countryService = countryService;
     }
 
-    public City saveCity(City city) {
-        // check if a city with this code already exists before creating
-        if (cityRepository.existsById(city.getCityCode())) {
-            throw new IllegalArgumentException("City already exists with code: " + city.getCityCode());
+    // CREATE
+    public CityDTO saveCity(CityDTO dto) {
+        if (cityRepository.existsById(dto.getCityCode())) {
+            throw new IllegalArgumentException("City already exists with code: " + dto.getCityCode());
         }
-        // bc city references a Country (a foreign key), verify that country actually exists
-        validateCountryExists(city.getCountry());
-        return cityRepository.save(city);
+        City city = buildEntityFromDTO(dto);
+        City saved = cityRepository.save(city);
+        return CityMapper.toDTO(saved);
     }
 
-    public List<City> getAllCities() {
-        return cityRepository.findAll();
+    // READ - get all
+    public List<CityDTO> getAllCities() {
+        return cityRepository.findAll()
+                .stream()
+                .map(CityMapper::toDTO)
+                .collect(Collectors.toList());
     }
 
-    public City getCityByCode(String cityCode) {
-        return getCityEntityByCode(cityCode);
+    // READ - get one by code
+    public CityDTO getCityByCode(String cityCode) {
+        return CityMapper.toDTO(getCityEntityByCode(cityCode));
     }
 
-    public City updateCity(String cityCode, City updatedCity) {
-        City existing = getCityByCode(cityCode);
-        // we don't allow attaching a Country that doesn't exist in the system.
-        validateCountryExists(updatedCity.getCountry());
-        existing.setName(updatedCity.getName());
-        existing.setCountry(updatedCity.getCountry());
-        return cityRepository.save(existing);
+    // UPDATE
+    public CityDTO updateCity(String cityCode, CityDTO dto) {
+        City existing = getCityEntityByCode(cityCode);
+        existing.setName(dto.getName());
+        existing.setCountry(findCountry(dto.getCountryIsoCode()));
+        City updated = cityRepository.save(existing);
+        return CityMapper.toDTO(updated);
     }
 
+    // DELETE
     public void deleteCity(String cityCode) {
         cityRepository.deleteById(cityCode);
     }
 
-    // Helper method: checks that the given country really exists in the system.
+    private City buildEntityFromDTO(CityDTO dto) {
+        City city = new City();
+        city.setCityCode(dto.getCityCode());
+        city.setName(dto.getName());
+        city.setCountry(findCountry(dto.getCountryIsoCode()));
+        return city;
+    }
+
     // Delegates to CountryService instead of querying CountryRepository directly.
-    // Used by both saveCity and updateCity.
-    private void validateCountryExists(Country country) {
-        if (country == null || country.getIsoCode() == null) {
-            throw new IllegalArgumentException("Country information is required.");
-        }
-        countryService.getCountryEntityByIsoCode(country.getIsoCode()); // throws NoDataFoundException if missing
+    private Country findCountry(String isoCode) {
+        return countryService.getCountryEntityByIsoCode(isoCode);
     }
 
     // Single source of truth for "find City by code or throw" —
-    // used by getCityByCode, updateCity, and other services (like PortService).
+    // used internally here, and by other services (like PortService) that need a real City entity.
     public City getCityEntityByCode(String cityCode) {
         return cityRepository.findById(cityCode)
                 .orElseThrow(() -> new NoDataFoundException("City not found with code: " + cityCode));
