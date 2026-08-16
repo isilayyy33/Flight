@@ -103,25 +103,28 @@ public class BillingPaymentService {
 
     // Calculates fare, tax, serviceFee and totalPrice for a single FlightSegment,
     // based on whether the departure and arrival countries match (domestic) or differ (international).
-    public BillingPayment calculateBillingPayment(FlightSegment flightSegment) {
-        boolean isDomestic = isDomesticFlight(flightSegment);
+// Pure hesaplama — DB'ye YAZMAZ. Search/preview için kullanılır.
+public BillingPayment buildBillingPayment(FlightSegment flightSegment) {
+    boolean isDomestic = isDomesticFlight(flightSegment);
+    BigDecimal fare = isDomestic ? DOMESTIC_FARE : INTERNATIONAL_FARE;
+    BigDecimal taxRate = isDomestic ? DOMESTIC_TAX_RATE : INTERNATIONAL_TAX_RATE;
+    BigDecimal serviceFeeRate = isDomestic ? DOMESTIC_SERVICE_FEE_RATE : INTERNATIONAL_SERVICE_FEE_RATE;
+    BigDecimal tax = fare.multiply(taxRate);
+    BigDecimal serviceFee = fare.add(tax).multiply(serviceFeeRate);
+    BigDecimal totalPrice = fare.add(tax).add(serviceFee);
 
-        BigDecimal fare = isDomestic ? DOMESTIC_FARE : INTERNATIONAL_FARE;
-        BigDecimal taxRate = isDomestic ? DOMESTIC_TAX_RATE : INTERNATIONAL_TAX_RATE;
-        BigDecimal serviceFeeRate = isDomestic ? DOMESTIC_SERVICE_FEE_RATE : INTERNATIONAL_SERVICE_FEE_RATE;
+    BillingPayment billingPayment = new BillingPayment();
+    billingPayment.setFare(fare);
+    billingPayment.setTax(tax);
+    billingPayment.setServiceFee(serviceFee);
+    billingPayment.setTotalPrice(totalPrice);
+    return billingPayment;
+}
 
-        BigDecimal tax = fare.multiply(taxRate);
-        BigDecimal serviceFee = fare.add(tax).multiply(serviceFeeRate);
-        BigDecimal totalPrice = fare.add(tax).add(serviceFee);
-
-        BillingPayment billingPayment = new BillingPayment();
-        billingPayment.setFare(fare);
-        billingPayment.setTax(tax);
-        billingPayment.setServiceFee(serviceFee);
-        billingPayment.setTotalPrice(totalPrice);
-
-        return billingPaymentRepository.save(billingPayment);
-    }
+// Hesaplar VE kaydeder — sadece kullanıcı gerçekten bilet satın alırken çağrılmalı.
+public BillingPayment calculateBillingPayment(FlightSegment flightSegment) {
+    return billingPaymentRepository.save(buildBillingPayment(flightSegment));
+}
 
     // Determines if a flight is domestic (same country on both ends) or international.
     private boolean isDomesticFlight(FlightSegment flightSegment) {

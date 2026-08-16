@@ -1,5 +1,8 @@
 package com.project.flight.service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -99,5 +102,13 @@ public class FlightSegmentService {
                 .orElseThrow(() -> new NoDataFoundException("FlightSegment not found with id: " + id));
     }
      // Single source of truth for "find FlightSegment by id or throw" 
+
+     // FlightSearchService tarafından kullanılır: rota + tarihe göre uçuşları bulur.
+public List<FlightSegment> findFlightSegments(String departurePortCode, String arrivalPortCode, LocalDate date) {
+    LocalDateTime startOfDay = date.atStartOfDay();
+    LocalDateTime endOfDay = date.atTime(LocalTime.MAX);
+    return flightSegmentRepository.findByDeparturePort_CodeAndArrivalPort_CodeAndDepartureTimeBetween(
+            departurePortCode, arrivalPortCode, startOfDay, endOfDay);
+}
     
 }
